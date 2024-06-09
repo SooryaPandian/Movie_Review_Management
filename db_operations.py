@@ -33,14 +33,14 @@ def get_reviews_for_movie(movie_id):
             cursor.close()
             connection.close()
 
-def add_review(user_id, movie_id, rating, comment):
+def add_review(user_id, movie_id,  comment,rating):
     connection = create_connection()
     if connection is None:
         return False
 
     try:
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO reviews (user_id, movie_id, rating, comment) VALUES (%s, %s, %s, %s)", (user_id, movie_id, rating, comment))
+        cursor.execute("INSERT INTO reviews (user_id, movie_id, comment, rating) VALUES (%s, %s, %s, %s)", (user_id, movie_id, comment, rating))
         connection.commit()
         return True
     except Error as e:

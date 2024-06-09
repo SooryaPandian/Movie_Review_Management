@@ -55,10 +55,6 @@
         .add-review {
             margin-top: 2rem;
         }
-        .stars {
-            color: gold;
-        }
-
     </style>
 </head>
 <body>
@@ -102,18 +98,6 @@
         const movieId = {{ movie_id }};
         const userId = {{ user_id | tojson | safe }};
 
-        function generateStars(rating) {
-            let stars = '';
-            for (let i = 0; i < 5; i++) {
-                if (i < rating) {
-                    stars += '<span class="fa fa-star stars"></span>';
-                } else {
-                    stars += '<span class="fa fa-star"></span>';
-                }
-            }
-            return stars;
-        }
-
         async function fetchMovieDetails(movieId) {
             try {
                 const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=en-US`);
@@ -145,7 +129,7 @@
                     const averageRating = data.reviews.reduce((sum, review) => sum + review.rating, 0) / data.reviews.length;
 
                     const ratingDiv = document.createElement('div');
-                    ratingDiv.innerHTML = `<p><strong>Average User Rating:</strong> ${generateStars(averageRating)} ${averageRating.toFixed(1)} / 5</p>`;
+                    ratingDiv.innerHTML = `<p><strong>Average User Rating:</strong> ${averageRating.toFixed(1)} / 5</p>`;
                     reviewSection.appendChild(ratingDiv);
 
                     data.reviews.forEach(review => {
@@ -153,7 +137,7 @@
                         reviewDiv.classList.add('review');
                         reviewDiv.innerHTML = `
                             <h3>${review.username}</h3>
-                            <p><strong>Rating:</strong> ${generateStars(review.rating)}  ${review.rating} / 5</p>
+                            <p><strong>Rating:</strong> ${review.rating} / 5</p>
                             <p>${review.comment}</p>
                         `;
                         reviewSection.appendChild(reviewDiv);
@@ -205,7 +189,5 @@
             fetchMovieReviews(movieId);
         });
     </script>
-<script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" integrity="sha384-rOA1PnstxnOBLzCLMcre8ybwbTmemjzdNlILg8O7z1lUkLXozs4DHonlDtnE7fpc" crossorigin="anonymous"></script>
-
 </body>
 </html>

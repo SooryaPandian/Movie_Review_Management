@@ -1,18 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from db_operations import get_reviews_for_movie, add_review, get_user_by_username, add_user, get_user_by_id
-import mysql.connector
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-
-# Database connection
-def get_db_connection():
-    return mysql.connector.connect(
-        host="your_host",
-        user="your_user",
-        password="your_password",
-        database="your_database"
-    )
 
 @app.route('/')
 def index():
@@ -25,6 +16,7 @@ def movie_detail(movie_id):
 
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
+    print("called get_reviews")
     movie_id = request.args.get('movie_id')
     if not movie_id:
         return jsonify({"error": "movie_id parameter is required"}), 400
@@ -32,11 +24,12 @@ def get_reviews():
     reviews = get_reviews_for_movie(movie_id)  # Fetch reviews from your database
     if reviews is None:
         return jsonify({"error": "No reviews found for this movie"}), 404
-
+    print("converted get_reviews")
     return jsonify({"reviews": reviews}), 200
 
 @app.route('/add_review', methods=['POST'])
 def submit_review():
+    print("called add_review")
     if 'user_id' not in session:
         return redirect(url_for('login'))
 

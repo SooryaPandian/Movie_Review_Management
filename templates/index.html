@@ -43,6 +43,9 @@
             transform: translateY(-10px);
             box-shadow: 0 0 8px rgba(255, 247, 247, 0.2), 0 0 5px rgba(255, 247, 247, 0.2);
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -54,13 +57,13 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
             <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height:100px;">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active" aria-current="page" style="color:white">Home</a>
+                    <a href="#" class="nav-link" aria-current="page" style="color:white" onclick="showPopularMovies(event)">Popular Movies</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" style="color:white">About us</a>
+                    <a href="#" class="nav-link" style="color:white" onclick="showRecentMovies(event)">Recent Movies</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" style="color:white">Contact us</a>
+                    <a href="#" class="nav-link" style="color:white" onclick="showRegionalMovies(event)">Regional Movies</a>
                 </li>
             </ul>
             {% if 'user_id' in session %}
@@ -71,89 +74,104 @@
             <form class="form-inline my-2 my-lg-0" onsubmit="searchMovies(event)">
                 <input id="searchInput" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
                 <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
-            </form>
-        </div>
-    </nav>
-
-    <div class="container">
-        <h1 style="color: white;">Popular Movies</h1>
-        <div class="row" id="movies">
-            <!-- Movie cards will be inserted here -->
-        </div>
+</form>
+</div>
+</nav>
+<div class="container">
+    <h1 id="page-title" style="color: white;">Popular Movies</h1>
+    <div id="language-selector" class="mb-3 hidden">
+        <label for="language" style="color:white;">Choose a language:</label>
+        <select id="language" onchange="fetchRegionalMovies()">
+            <option value="ta">Tamil</option>
+            <option value="hi">Hindi</option>
+            <option value="te">Telugu</option>
+            <option value="ml">Malayalam</option>
+            <!-- Add more languages as needed -->
+        </select>
     </div>
+    <div class="row" id="movies">
+        <!-- Movie cards will be inserted here -->
+    </div>
+</div>
 
-    <script>
-        const apiKey = 'aff383143383395d19546ba1df0e1e07';
+<script>
+    const apiKey = 'aff383143383395d19546ba1df0e1e07';
+    const movieContainer = document.getElementById('movies');
+    const pageTitle = document.getElementById('page-title');
+    const languageSelector = document.getElementById('language-selector');
 
-        async function fetchPopularMovies() {
-            try {
-                const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`);
-                const data = await response.json();
+    async function fetchMovies(url) {
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
 
-                if (data.results && Array.isArray(data.results)) {
-                    const movies = data.results;
-                    const movieContainer = document.getElementById('movies');
-                    movieContainer.innerHTML = ''; // Clear previous content
+            if (data.results && Array.isArray(data.results)) {
+                movieContainer.innerHTML = ''; // Clear previous content
 
-                    movies.forEach(movie => {
-                        const movieCard = createMovieCard(movie);
-                        movieContainer.appendChild(movieCard);
-                    });
-                } else {
-                    console.error('Unexpected data format:', data);
-                }
-            } catch (error) {
-                console.error('Error fetching popular movies:', error);
+                data.results.forEach(movie => {
+                    const movieCard = createMovieCard(movie);
+                    movieContainer.appendChild(movieCard);
+                });
+            } else {
+                console.error('Unexpected data format:', data);
             }
+        } catch (error) {
+            console.error('Error fetching movies:', error);
         }
+    }
 
-        async function searchMovies(event) {
-            event.preventDefault();
+    function showPopularMovies(event) {
+        event.preventDefault();
+        pageTitle.textContent = 'Popular Movies';
+        languageSelector.classList.add('hidden');
+        fetchMovies(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`);
+    }
 
-            const searchInput = document.getElementById('searchInput').value;
+    function showRecentMovies(event) {
+        event.preventDefault();
+        pageTitle.textContent = 'Recent Movies';
+        languageSelector.classList.add('hidden');
+        fetchMovies(`https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US&page=1`);
+    }
 
-            try {
-                const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${searchInput}&api_key=${apiKey}`);
-                const data = await response.json();
+    function showRegionalMovies(event) {
+        event.preventDefault();
+        pageTitle.textContent = 'Regional Movies';
+        languageSelector.classList.remove('hidden');
+        fetchRegionalMovies();
+    }
 
-                if (data.results && Array.isArray(data.results)) {
-                    const movieContainer = document.getElementById('movies');
-                    movieContainer.innerHTML = ''; // Clear previous search results
+    function fetchRegionalMovies() {
+        const selectedLanguage = document.getElementById('language').value;
+        fetchMovies(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_original_language=${selectedLanguage}`);
+    }
 
-                    const searchTitle = document.createElement('h1');
-                    searchTitle.style.color = 'white';
-                    searchTitle.textContent = 'Your Search Results';
-                    movieContainer.appendChild(searchTitle);
+    async function searchMovies(event) {
+        event.preventDefault();
+        const searchInput = document.getElementById('searchInput').value;
+        pageTitle.textContent = 'Search Results';
+        languageSelector.classList.add('hidden');
 
-                    data.results.forEach(movie => {
-                        const movieCard = createMovieCard(movie);
-                        movieContainer.appendChild(movieCard);
-                    });
-                } else {
-                    console.error('Unexpected data format:', data);
-                }
-            } catch (error) {
-                console.error('Error fetching search results:', error);
-            }
-        }
+        fetchMovies(`https://api.themoviedb.org/3/search/movie?query=${searchInput}&api_key=${apiKey}`);
+    }
 
-        function createMovieCard(movie) {
-            const movieCard = document.createElement('div');
-            movieCard.classList.add('movie-card');
-            movieCard.innerHTML = `
-                <img src="https://image.tmdb.org/t/p/original/${movie.poster_path}" alt="${movie.title}">
-                <h2 style="color:white;">${movie.title}</h2>
-                <p style="color:white;">${movie.overview.substring(0, 150)}...</p>
-            `;
-            movieCard.onclick = () => {
-                window.location.href = `/movieDetail/${movie.id}`;
-            };
-            return movieCard;
-        }
+    function createMovieCard(movie) {
+        const movieCard = document.createElement('div');
+        movieCard.classList.add('movie-card');
+        movieCard.innerHTML = `
+            <img src="https://image.tmdb.org/t/p/original/${movie.poster_path}" alt="${movie.title}">
+            <h2 style="color:white;">${movie.title}</h2>
+            <p style="color:white;">${movie.overview.substring(0, 150)}...</p>
+        `;
+        movieCard.onclick = () => {
+            window.location.href = `/movieDetail/${movie.id}`;
+        };
+        return movieCard;
+    }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchPopularMovies();
-        });
-    </script>
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchMovies(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`);
+    });
+</script>
 </body>
 </html>

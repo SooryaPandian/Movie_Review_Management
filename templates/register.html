@@ -4,9 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-images {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Ensure the images are behind the form */
+        }
+
+        .background-images img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0; /* Start with all images hidden */
+            transition: opacity 0.5s ease-in-out; /* Fade transition */
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .background-images img.show {
+            opacity: 1; /* Show the current image */
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+
+        .form-label {
+            color: #fff;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
+    <div class="background-images">
+        <img src="{{ url_for('static', filename='m1.jpeg') }}" class="bg-image">
+        <img src="{{ url_for('static', filename='m2.jpeg') }}" class="bg-image">
+        <img src="{{ url_for('static', filename='m3.jpeg') }}" class="bg-image">
+        <img src="{{ url_for('static', filename='m4.jpeg') }}" class="bg-image">
+        <img src="{{ url_for('static', filename='m5.jpeg') }}" class="bg-image">
+    </div>
+
     <div class="container">
         <h1>Register</h1>
         <form method="POST">
@@ -21,5 +84,26 @@
             <button type="submit" class="btn btn-primary">Register</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('.bg-image');
+            let currentIndex = 0;
+
+            function showImage(index) {
+                images.forEach(img => img.classList.remove('show'));
+                images[index].classList.add('show');
+            }
+
+            function nextImage() {
+                currentIndex = (currentIndex + 1) % images.length;
+                showImage(currentIndex);
+            }
+
+            showImage(currentIndex); // Initial display
+
+            setInterval(nextImage, 3000); // Switch image every 3 seconds
+        });
+    </script>
 </body>
 </html>
