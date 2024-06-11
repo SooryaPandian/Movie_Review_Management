@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from db_operations import get_reviews_for_movie, add_review, get_user_by_username, add_user, get_user_by_id
-
+from db_operations import get_reviews_for_movie, add_review, get_user_by_username, add_user, get_user_by_id, get_reviews_by_user, update_review, delete_review, update_rating
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -16,20 +15,17 @@ def movie_detail(movie_id):
 
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
-    print("called get_reviews")
     movie_id = request.args.get('movie_id')
     if not movie_id:
         return jsonify({"error": "movie_id parameter is required"}), 400
 
-    reviews = get_reviews_for_movie(movie_id)  # Fetch reviews from your database
+    reviews = get_reviews_for_movie(movie_id)
     if reviews is None:
         return jsonify({"error": "No reviews found for this movie"}), 404
-    print("converted get_reviews")
     return jsonify({"reviews": reviews}), 200
 
 @app.route('/add_review', methods=['POST'])
 def submit_review():
-    print("called add_review")
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
@@ -73,3 +69,40 @@ def register():
             return redirect(url_for('login'))
     return render_template('register.html')
 
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    user = get_user_by_id(user_id)
+    reviews = get_reviews_by_user(user_id)
+
+    return render_template('profile.html', user=user, reviews=reviews)
+
+@app.route('/edit_review/<int:review_id>', methods=['POST'])
+def edit_review(review_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    request_data = request.json
+    comment = request_data.get('comment')
+    rating = request_data.get('rating')
+
+    if comment:
+        if not update_review(review_id, comment=comment):
+            return jsonify({"error": "Failed to update review comment"}), 500
+    if rating:
+        if not update_rating(review_id, rating=rating):
+            return jsonify({"error": "Failed to update review rating"}), 500
+
+    return jsonify({"comment": comment, "rating": rating}), 200
+
+@app.route('/delete_review/<int:review_id>', methods=['POST'])
+def delete_review_route(review_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if delete_review(review_id):
+        return redirect(url_for('profile'))
+    return "Failed to delete review", 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
