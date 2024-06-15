@@ -5,13 +5,14 @@ This is a simple Movie Review System built using Flask, MySQL, and the TMDb API.
 ## Installation
 
 1. Clone the repository:
+   
 
     ```bash
     git clone https://github.com/SooryaPandian/Movie_Review_Management
     cd movie-review-system
     ```
 
-2. Install the required dependencies:
+3. Install the required dependencies:
 
     ```bash
     pip install -r requirements.txt
